@@ -16,22 +16,32 @@ export function useAdminProducts() {
     const { data: productList } = productListQuery;
 
     // 로그인한 유저 상품만 필터링
-    const updateProducts = useMemo(() => {
-        const loginInfo = localStorage.getItem("auth-storage");
+    // const updateProducts = useMemo(() => {
+    //     const loginInfo = localStorage.getItem("auth-storage");
 
-        if (!loginInfo) return [];
+    //     if (!loginInfo) return [];
 
-        const { accessToken } = JSON.parse(loginInfo).state;
-        const payload = parseJwt(accessToken);
-        const upk = payload.id;
+    //     const { accessToken } = JSON.parse(loginInfo).state;
+    //     const payload = parseJwt(accessToken);
+    //     const upk = payload.id;
 
-        if (!productList || productList.length === 0) return [];
+    //     if (!productList || productList.length === 0) return [];
 
-        // eslint-disable-next-line react-hooks/set-state-in-render
-        setLoading(false);
+    //     // eslint-disable-next-line react-hooks/set-state-in-render
+    //     setLoading(false);
 
-        return productList.filter((p) => p.user.id === upk);
-    }, [productList]);
+    //     return productList.filter((p) => p.user.id === upk);
+    // }, [productList]);
+    useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const loginInfo = localStorage.getItem("auth-storage");
+    if (!loginInfo) return;
+
+    const { accessToken } = JSON.parse(loginInfo).state;
+    const payload = parseJwt(accessToken);
+    setUpk(payload.id);
+    }, []);
 
     useEffect(() => {
         setFilteredProducts(updateProducts);
