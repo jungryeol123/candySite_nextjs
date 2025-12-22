@@ -1,3 +1,6 @@
+"use client"; // ★ 필수
+
+import { Suspense } from "react";
 import LoginClient from "./LoginClient";
 
 export const metadata = {
@@ -8,5 +11,9 @@ export const metadata = {
 };
 
 export default function LoginPage() {
-  return <LoginClient />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginClient />
+    </Suspense>
+  );
 }
