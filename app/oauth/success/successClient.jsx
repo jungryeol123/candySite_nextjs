@@ -7,6 +7,7 @@ import { useAuthStore } from "@/store/authStore";
 export default function OAuthSuccessPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  console.log("dd");
 
   // 상태 저장 함수
   const socialLogin = useAuthStore((state) => state.socialLogin);
