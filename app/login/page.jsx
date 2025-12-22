@@ -1,5 +1,3 @@
-"use client"; // ★ 필수
-
 import { Suspense } from "react";
 import LoginClient from "./LoginClient";
 
