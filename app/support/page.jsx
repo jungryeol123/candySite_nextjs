@@ -1,3 +1,5 @@
+"use client";
+
 import { FaPhoneAlt, FaEnvelope, FaQuestionCircle } from "react-icons/fa";
 import "./CustomerService.scss";
 import { CustomerCard } from "@/features/support/CustomerCard";
