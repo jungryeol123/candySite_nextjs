@@ -1,3 +1,103 @@
+// "use client";
+
+// import Swal from "sweetalert2";
+// import { useState, useEffect, useMemo } from "react";
+// import { parseJwt } from "features/auth/parseJwt";
+// import { useAdminProductsQuery } from "@/features/administration/products/edit/useAdminProductsQuery";
+
+// export function useAdminProducts() {
+
+//     const { productListQuery, productDelete}= useAdminProductsQuery();
+
+//     const [filteredProducts, setFilteredProducts] = useState([]);
+//     const [activeFilter, setActiveFilter] = useState("");
+//     const [loading, setLoading] = useState(true);
+
+//     const { data: productList } = productListQuery;
+
+//     // 로그인한 유저 상품만 필터링
+//     const updateProducts = useMemo(() => {
+//         const loginInfo = localStorage.getItem("auth-storage");
+
+//         if (!loginInfo) return [];
+
+//         const { accessToken } = JSON.parse(loginInfo).state;
+//         const payload = parseJwt(accessToken);
+//         const upk = payload.id;
+
+//         if (!productList || productList.length === 0) return [];
+
+//         // eslint-disable-next-line react-hooks/set-state-in-render
+//         setLoading(false);
+
+//         return productList.filter((p) => p.user.id === upk);
+//     }, [productList]);
+
+//     useEffect(() => {
+//         setFilteredProducts(updateProducts);
+//     }, [updateProducts]);
+
+//     // 필터 클릭 로직
+//     const handleFilter = (type) => {
+//         setActiveFilter(type);
+
+//         let sorted = [];
+
+//         if (type === "new") {
+//           sorted = updateProducts.toSorted(
+//             (a, b) => new Date(b.productDate) - new Date(a.productDate)
+//           );
+//         } else if (type === "priceHigh") {
+//           sorted = updateProducts.toSorted((a, b) => b.price - a.price);
+//         } else if (type === "priceLow") {
+//           sorted = updateProducts.toSorted((a, b) => a.price - b.price);
+//         }
+
+//         setFilteredProducts(sorted);
+//     };
+
+//     // 삭제 로직
+//     const handleDelete = async (productId) => {
+//         const result = await Swal.fire({
+//             icon: "warning",
+//             text: "상품을 정말 삭제 하시겠습니까?",
+//             showCancelButton: true,
+//             confirmButtonText: "삭제",
+//             cancelButtonText: "취소",
+//         });
+
+//         if (!result.isConfirmed) return;
+
+//         try {
+//             await productDelete.mutateAsync({ productId });
+
+//             Swal.fire({
+//                 icon: "success",
+//                 title: "상품 삭제 성공!",
+//                 text: "상품이 성공적으로 삭제되었습니다.",
+//             });
+//         } catch (err) {
+//             Swal.fire({
+//                 icon: "error",
+//                 title: "삭제 실패",
+//                 text: "다시 시도해주세요.",
+//             });
+//         }
+//     };
+
+//     return {
+//         loading,
+//         activeFilter,
+//         filteredProducts,
+//         handleFilter,
+//         handleDelete,
+//         filterLabel: [
+//           { label: "최신순", value: "new" },
+//           { label: "높은가격순", value: "priceHigh" },
+//           { label: "낮은가격순", value: "priceLow" },
+//         ],
+//     };
+// }
 "use client";
 
 import Swal from "sweetalert2";
@@ -7,32 +107,17 @@ import { useAdminProductsQuery } from "@/features/administration/products/edit/u
 
 export function useAdminProducts() {
 
-    const { productListQuery, productDelete}= useAdminProductsQuery();
+  const { productListQuery, productDelete } = useAdminProductsQuery();
 
-    const [filteredProducts, setFilteredProducts] = useState([]);
-    const [activeFilter, setActiveFilter] = useState("");
-    const [loading, setLoading] = useState(true);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [activeFilter, setActiveFilter] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [upk, setUpk] = useState(null);
 
-    const { data: productList } = productListQuery;
+  const { data: productList } = productListQuery;
 
-    // 로그인한 유저 상품만 필터링
-    // const updateProducts = useMemo(() => {
-    //     const loginInfo = localStorage.getItem("auth-storage");
-
-    //     if (!loginInfo) return [];
-
-    //     const { accessToken } = JSON.parse(loginInfo).state;
-    //     const payload = parseJwt(accessToken);
-    //     const upk = payload.id;
-
-    //     if (!productList || productList.length === 0) return [];
-
-    //     // eslint-disable-next-line react-hooks/set-state-in-render
-    //     setLoading(false);
-
-    //     return productList.filter((p) => p.user.id === upk);
-    // }, [productList]);
-    useEffect(() => {
+  // localStorage에서 유저 정보는 useEffect에서 읽어야 함
+  useEffect(() => {
     if (typeof window === "undefined") return;
 
     const loginInfo = localStorage.getItem("auth-storage");
@@ -41,70 +126,75 @@ export function useAdminProducts() {
     const { accessToken } = JSON.parse(loginInfo).state;
     const payload = parseJwt(accessToken);
     setUpk(payload.id);
-    }, []);
+  }, []);
 
-    useEffect(() => {
-        setFilteredProducts(updateProducts);
-    }, [updateProducts]);
+  // 상품 필터링
+  useEffect(() => {
+    if (!productList || !upk) return;
 
-    // 필터 클릭 로직
-    const handleFilter = (type) => {
-        setActiveFilter(type);
+    const result = productList.filter((p) => p.user.id === upk);
+    setFilteredProducts(result);
+    setLoading(false);
+  }, [productList, upk]);
 
-        let sorted = [];
+  // 필터 클릭 로직
+  const handleFilter = (type) => {
+    setActiveFilter(type);
 
-        if (type === "new") {
-          sorted = updateProducts.toSorted(
-            (a, b) => new Date(b.productDate) - new Date(a.productDate)
-          );
-        } else if (type === "priceHigh") {
-          sorted = updateProducts.toSorted((a, b) => b.price - a.price);
-        } else if (type === "priceLow") {
-          sorted = updateProducts.toSorted((a, b) => a.price - b.price);
-        }
+    let sorted = [];
 
-        setFilteredProducts(sorted);
-    };
+    if (type === "new") {
+      sorted = filteredProducts.toSorted(
+        (a, b) => new Date(b.productDate) - new Date(a.productDate)
+      );
+    } else if (type === "priceHigh") {
+      sorted = filteredProducts.toSorted((a, b) => b.price - a.price);
+    } else if (type === "priceLow") {
+      sorted = filteredProducts.toSorted((a, b) => a.price - b.price);
+    }
 
-    // 삭제 로직
-    const handleDelete = async (productId) => {
-        const result = await Swal.fire({
-            icon: "warning",
-            text: "상품을 정말 삭제 하시겠습니까?",
-            showCancelButton: true,
-            confirmButtonText: "삭제",
-            cancelButtonText: "취소",
-        });
+    setFilteredProducts(sorted);
+  };
 
-        if (!result.isConfirmed) return;
+  // 삭제 로직
+  const handleDelete = async (productId) => {
+    const result = await Swal.fire({
+      icon: "warning",
+      text: "상품을 정말 삭제 하시겠습니까?",
+      showCancelButton: true,
+      confirmButtonText: "삭제",
+      cancelButtonText: "취소",
+    });
 
-        try {
-            await productDelete.mutateAsync({ productId });
+    if (!result.isConfirmed) return;
 
-            Swal.fire({
-                icon: "success",
-                title: "상품 삭제 성공!",
-                text: "상품이 성공적으로 삭제되었습니다.",
-            });
-        } catch (err) {
-            Swal.fire({
-                icon: "error",
-                title: "삭제 실패",
-                text: "다시 시도해주세요.",
-            });
-        }
-    };
+    try {
+      await productDelete.mutateAsync({ productId });
 
-    return {
-        loading,
-        activeFilter,
-        filteredProducts,
-        handleFilter,
-        handleDelete,
-        filterLabel: [
-          { label: "최신순", value: "new" },
-          { label: "높은가격순", value: "priceHigh" },
-          { label: "낮은가격순", value: "priceLow" },
-        ],
-    };
+      Swal.fire({
+        icon: "success",
+        title: "상품 삭제 성공!",
+        text: "상품이 성공적으로 삭제되었습니다.",
+      });
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "삭제 실패",
+        text: "다시 시도해주세요.",
+      });
+    }
+  };
+
+  return {
+    loading,
+    activeFilter,
+    filteredProducts,
+    handleFilter,
+    handleDelete,
+    filterLabel: [
+      { label: "최신순", value: "new" },
+      { label: "높은가격순", value: "priceHigh" },
+      { label: "낮은가격순", value: "priceLow" },
+    ],
+  };
 }
