@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import PayResultClient from "./PayResultClient";
+import PayResultClient from "./PayResultClient.jsx";
 
 export default function PayResultPage() {
   return (
